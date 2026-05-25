@@ -1,0 +1,23 @@
+# Ambiente Virtual
+venv/
+
+# Ficheiros de Cache do Python e Jupyter
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Ficheiros de Sistema Operativo (Lixo do Windows/Mac)
+.DS_Store
+Thumbs.db
+
+# Ferramentas de Tracking (Fase 2 - Para o código da Laura)
+wandb/
+mlruns/
+.mlflow/
+
+# Modelos Guardados (Pesos do PyTorch)
+*.pt
+*.pth
+
+# Ignorar as imagens pesadas do dataset
+data/MIQR-CC-Dataset/processed/
