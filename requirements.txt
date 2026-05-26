@@ -1,8 +1,24 @@
+# --- Dados e Processamento ---
 pandas
 numpy
 scikit-learn
 opencv-python
+pillow
+# --- Deep Learning ---
 torch
 torchvision
 pillow
+torchaudio
+# --- Modelos e Treino ---
+torchinfo
+tqdm
+# --- Tracking de Experiências  ---
+wandb
+# --- Interpretabilidade  ---
+grad-cam
+# --- Visualização e Métricas  ---
+matplotlib
+seaborn
+# --- Ambiente ---
 jupyter
+ipykernel
