@@ -57,23 +57,75 @@ class MIQRDataset(Dataset):
 
         return image, label
 
+    def get_labels(self):
+        """Retorna uma lista dos labels numéricos de todas as amostras do dataset (sem carregar as imagens)."""
+        return [self.class_map[lbl] for lbl in self.metadata['Label_Mapped']]
+
 # ------------------------------------------------------------------
 # Data Augmentation e Transformações
 # ------------------------------------------------------------------
 
-# Transformações para TREINO (Com Data Augmentation)
+# Transformações para TREINO V1 (Sem Augmentation - Padrão / Quase sem nada)
 train_transforms = transforms.Compose([
     transforms.Resize((224, 224)),
-    transforms.RandomRotation(15),            # Rotações ligeiras até 15 graus
-    transforms.RandomHorizontalFlip(p=0.5),   # Espelho horizontal (50% de probabilidade)
-    transforms.ColorJitter(brightness=0.2),   # Ajuste de brilho para simular variação no raio-x
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
-# Transformações para VALIDAÇÃO e TESTE (SEM Augmentation, apenas normalização)
+# Transformações para TREINO V2 (Com Data Augmentation Forte - Flips, Rotações e Zoom)
+train_transforms_strong = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.RandomRotation(15),             # Rotações ligeiras (até 15 graus)
+    #transforms.RandomHorizontalFlip(p=0.5),   # Flip horizontal (50% de probabilidade)
+    transforms.RandomAffine(
+        degrees=0,
+        translate=(0.1, 0.1),                  # Translações ligeiras
+        scale=(0.90, 1.10)                     # Zoom ligeiro
+    ),
+    transforms.ColorJitter(
+        brightness=0.25,                       # Ajuste de brilho
+        contrast=0.25                          # Ajuste de contraste
+    ),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+])
+
+# Transformações para VALIDAÇÃO e TESTE (Apenas normalização e redimensionamento)
 val_transforms = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
+
+
+# ------------------------------------------------------------------
+# Weighted Random Sampler (para balancear batches)
+# ------------------------------------------------------------------
+
+def get_weighted_sampler(dataset):
+    """
+    Cria um WeightedRandomSampler para balancear a amostragem das classes durante o treino.
+    Garante que cada batch tenha representação equilibrada de todas as classes.
+    """
+    labels = dataset.get_labels()
+    
+    # Contar instâncias de cada classe (0 a 3)
+    class_counts = torch.zeros(4, dtype=torch.float32)
+    for lbl in labels:
+        class_counts[lbl] += 1
+        
+    # Peso da classe é o inverso da frequência
+    class_weights = 1.0 / class_counts
+    
+    # Atribuir peso a cada amostra
+    sample_weights = torch.tensor([class_weights[lbl] for lbl in labels], dtype=torch.float32)
+    
+    # Criar sampler com reposição
+    sampler = torch.utils.data.WeightedRandomSampler(
+        weights=sample_weights,
+        num_samples=len(sample_weights),
+        replacement=True
+    )
+    
+    return sampler
+

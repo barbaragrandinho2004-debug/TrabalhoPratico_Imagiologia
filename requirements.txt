@@ -7,7 +7,7 @@ pillow
 # --- Deep Learning ---
 torch
 torchvision
-pillow
+#pillow
 torchaudio
 # --- Modelos e Treino ---
 torchinfo
@@ -19,6 +19,7 @@ grad-cam
 # --- Visualização e Métricas  ---
 matplotlib
 seaborn
+livelossplot
 # --- Ambiente ---
 jupyter
 ipykernel

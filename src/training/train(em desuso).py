@@ -1,6 +1,10 @@
 #1. Importações Básicas
 
 import os
+import sys
+# Adicionar a pasta 'src' ao path caso o script seja executado diretamente
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -8,7 +12,8 @@ from torch.utils.data import DataLoader
 from torchvision import models
 
 # Importar as ferramentas e transformações que criaste no data_setup.py
-from data_setup import MIQRDataset, train_transforms, val_transforms
+from preprocessing.data_setup import MIQRDataset, train_transforms, val_transforms
+
 
 #2. Escrever as Funções do Motor de Treino (train_step e val_step)
 
@@ -19,6 +24,8 @@ def train_step(modelo, dataloader, criterio, otimizador, device):
     """Motor de aprendizagem: faz forward pass, calcula o erro e ajusta os pesos."""
     modelo.train()
     perda_total = 0.0
+    corretas = 0
+    total = 0
     
     for batch_idx, (imagens, labels) in enumerate(dataloader):
         imagens, labels = imagens.to(device), labels.to(device)
@@ -93,7 +100,7 @@ def main():
     modelo = modelo.to(device)
 
     # 4. Injetar os Pesos
-    pesos_classes = torch.tensor([2.5960, 0.5399, 1.0000, 1.3110], dtype=torch.float32).to(device)
+    pesos_classes = torch.tensor([2.4043, 0.5454, 1.0055, 1.3230], dtype=torch.float32).to(device)
     criterio = nn.CrossEntropyLoss(weight=pesos_classes)
     otimizador = optim.Adam(modelo.parameters(), lr=0.001)
     

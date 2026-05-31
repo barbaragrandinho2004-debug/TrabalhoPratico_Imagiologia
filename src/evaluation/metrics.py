@@ -45,7 +45,9 @@ class MetricsEvaluator:
             'auc_roc': auc_roc,
             'report': report,
             'y_pred_labels': y_pred_labels,
-            'y_true': y_true
+            'y_true': y_true,
+            'labels': y_true,
+            'probs': y_pred_probs
         }
 
     def plot_confusion_matrix(self, y_true, y_pred_labels, title="Confusion Matrix", save_path=None):
@@ -68,11 +70,9 @@ class MetricsEvaluator:
         plt.xlabel('Previsão do Modelo')
         plt.tight_layout()
         
-        if save_path:
-            plt.savefig(save_path, dpi=300)
-            plt.close()
-        else:
-            plt.show()
+        
+        plt.savefig(save_path, dpi=300)
+        plt.show()
 
     def plot_roc_curves(self, y_true, y_pred_probs, title="Curvas AUC-ROC por Classe", save_path=None):
         """

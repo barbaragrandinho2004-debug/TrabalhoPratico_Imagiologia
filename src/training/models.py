@@ -73,14 +73,4 @@ def get_model(model_name="resnet50", num_classes=4, feature_extracting=True):
         
     return model
 
-if __name__ == "__main__":
-    # Testar o DenseNet121 (recomendado para imagens de raio-X médico)
-    model = get_model("densenet121", num_classes=4, feature_extracting=True)
-    dummy_input = torch.randn(2, 3, 224, 224) # Batch de 2 imagens 224x224 RGB
-    output = model(dummy_input)
-    print("Output shape (DenseNet121):", output.shape) # Deve ser [2, 4]
     
-    # Testar o ViT
-    model_vit = get_model("vit_b_16", num_classes=4, feature_extracting=True)
-    output_vit = model_vit(dummy_input)
-    print("Output shape (ViT-B-16):", output_vit.shape) # Deve ser [2, 4]

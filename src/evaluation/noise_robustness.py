@@ -92,14 +92,14 @@ def get_robustness_transforms(noise_type="gaussian"):
         raise ValueError(f"noise_type '{noise_type}' não reconhecido. Usa: 'gaussian', 'contrast', 'salt_pepper', 'combined'")
 
 
-def evaluate_robustness(model, val_loader, evaluator, device, noise_types=None):
+def evaluate_robustness(model, test_loader, evaluator, device, noise_types=None):
     """
     Avalia o modelo sob diferentes tipos de ruído e compara com a performance limpa.
     Retorna um dicionário com os resultados de cada tipo de ruído.
 
     Parâmetros:
     - model: modelo PyTorch treinado
-    - val_loader: DataLoader de validação (sem ruído)
+    - test_loader: DataLoader de teste (sem ruído)
     - evaluator: instância de MetricsEvaluator
     - device: 'cuda' ou 'cpu'
     - noise_types: lista de tipos de ruído a testar. Default: todos os tipos.
@@ -118,7 +118,7 @@ def evaluate_robustness(model, val_loader, evaluator, device, noise_types=None):
         noise_transform = None if noise_type == "clean" else get_robustness_transforms(noise_type)
 
         with torch.no_grad():
-            for inputs, labels in val_loader:
+            for inputs, labels in test_loader:
                 # Aplicar ruído aos inputs antes de mandar para o modelo
                 if noise_transform is not None:
                     inputs = torch.stack([noise_transform(img) for img in inputs])
@@ -138,27 +138,20 @@ def evaluate_robustness(model, val_loader, evaluator, device, noise_types=None):
             'f1_macro': metrics['f1_macro'],
             'auc_roc': metrics['auc_roc']
         }
-        print(f"[{noise_type.upper():12s}] F1-Macro: {metrics['f1_macro']:.4f} | AUC-ROC: {metrics['auc_roc']:.4f}")
-
-    return results
-
-
-def print_robustness_report(results):
-    """
-    Imprime um relatório comparativo de robustez, mostrando a degradação
-    de performance face à avaliação limpa (sem ruído).
-    """
+    
     clean_f1 = results.get("clean", {}).get("f1_macro", None)
-    print("\n" + "="*55)
-    print("       RELATÓRIO DE ROBUSTEZ AO RUÍDO")
-    print("="*55)
-    print(f"{'Tipo de Ruído':<20} {'F1-Macro':>10} {'Degradação':>12}")
-    print("-"*55)
+    
+    print(f"{'Tipo de Ruído':<20} {'F1-Macro':>10} {'Degradação':>12} {'AUC-ROC':>12}")
+    print("-"*60)
     for noise_type, vals in results.items():
         f1 = vals['f1_macro']
         degradation = ""
+        auc = vals['auc_roc']
         if clean_f1 is not None and noise_type != "clean":
             diff = f1 - clean_f1
             degradation = f"{diff:+.4f}"
-        print(f"{noise_type:<20} {f1:>10.4f} {degradation:>12}")
+        print(f"{noise_type:<20} {f1:>10.4f} {degradation:>12} {auc:>12.4f}")
     print("="*55)
+
+    
+    return results
